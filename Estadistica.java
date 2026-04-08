@@ -1,69 +1,129 @@
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Random;
 
 public class Estadistica {
 
     public static void main(String[] args) {
 
-        int poblacionN = 300; // Población total de alumnos
-        int tamanoMuestra = 150; // La mitad de la población
+        int poblacion = 300;
+
+        int muestra50 = (int)(poblacion * 0.50); // 150
+        int muestra3 = (int)(poblacion * 0.03);  // 9
+
         double minimo = 5.0;
         double maximo = 10.0;
+
         Random random = new Random();
 
-        // 1. GENERAR LA POBLACIÓN DE 300 ALUMNOS
-        List<Double> poblacion = new ArrayList<>();
-        double sumaPoblacion = 0;
+        double[] promedios = new double[poblacion];
 
-        for (int i = 0; i < poblacionN; i++) {
+        // GENERAR POBLACION
+        for (int i = 0; i < poblacion; i++) {
             double promedio = minimo + (random.nextDouble() * (maximo - minimo));
             promedio = Math.round(promedio * 100.0) / 100.0;
-            poblacion.add(promedio);
-            sumaPoblacion += promedio;
+            promedios[i] = promedio;
         }
 
-        double mediaPoblacional = sumaPoblacion / poblacionN;
-        mediaPoblacional = Math.round(mediaPoblacional * 100.0) / 100.0;
-        
-        System.out.println("=== DATOS DE LA POBLACIÓN ===");
-        System.out.println("Promedio general de los " + poblacionN + " alumnos (Parámetro): " + mediaPoblacional);
-
-        // 2. MÉTODOS DE SELECCIÓN DE LA MUESTRA (Muestreo Aleatorio Simple sin reemplazo)
-        // Se crea una lista con los índices del 0 al 299
-        List<Integer> indices = new ArrayList<>();
-        for (int i = 0; i < poblacionN; i++) {
-            indices.add(i);
+        // MUESTRA 50%
+        double[] muestraA = new double[muestra50];
+        for (int i = 0; i < muestra50; i++) {
+            int indice = random.nextInt(poblacion);
+            muestraA[i] = promedios[indice];
         }
 
-        // Se mezcla la lista aleatoriamente para evitar sesgos
-        Collections.shuffle(indices);
+        System.out.println("MUESTRA 50% (150 alumnos)");
 
-        // 3. EXTRAER LA MUESTRA DE 150 ALUMNOS
-        List<Double> muestra = new ArrayList<>();
-        double sumaMuestra = 0;
+        mostrarEstadisticas(muestraA);
 
-        System.out.println("\n=== DATOS DE LA MUESTRA ===");
-        System.out.println("Extrayendo una muestra aleatoria de " + tamanoMuestra + " alumnos...");
-
-        for (int i = 0; i < tamanoMuestra; i++) {
-            // Se toman los primeros 150 elementos de la lista desordenada
-            int indiceSeleccionado = indices.get(i);
-            double calificacionAlumno = poblacion.get(indiceSeleccionado);
-            
-            muestra.add(calificacionAlumno);
-            sumaMuestra += calificacionAlumno;
+        // MUESTRA 3%
+        double[] muestraB = new double[muestra3];
+        for (int i = 0; i < muestra3; i++) {
+            int indice = random.nextInt(poblacion);
+            muestraB[i] = promedios[indice];
         }
 
-        double mediaMuestral = sumaMuestra / tamanoMuestra;
-        mediaMuestral = Math.round(mediaMuestral * 100.0) / 100.0;
+        System.out.println("\n");
+        System.out.println("MUESTRA 3% (9 alumnos)");
 
-        System.out.println("Promedio de la muestra de " + tamanoMuestra + " alumnos (Estadístico): " + mediaMuestral);
-        
-        // Comprobar qué tan cerca estuvo la muestra del valor real
-        double diferencia = Math.abs(mediaPoblacional - mediaMuestral);
-        diferencia = Math.round(diferencia * 100.0) / 100.0;
-        System.out.println("\nDiferencia absoluta entre la población y la muestra: " + diferencia);
+
+        mostrarEstadisticas(muestraB);
+    }
+
+    public static void mostrarEstadisticas(double[] muestra) {
+
+        Arrays.sort(muestra);
+        int n = muestra.length;
+
+        // MOSTRAR DATOS
+        System.out.println("\nDatos de la muestra (ordenados):");
+        for (int i = 0; i < n; i++) {
+            System.out.println("Dato " + (i + 1) + ": " + muestra[i]);
+        }
+
+        // MEDIA
+        double suma = 0;
+        for (double val : muestra) suma += val;
+        double media = suma / n;
+
+        // MEDIANA
+        double mediana;
+        if (n % 2 == 0) {
+            mediana = (muestra[n / 2 - 1] + muestra[n / 2]) / 2;
+        } else {
+            mediana = muestra[n / 2];
+        }
+
+        // MODA
+        double moda = muestra[0];
+        int maxFrecuencia = 1;
+        int frecuenciaActual = 1;
+
+        for (int i = 1; i < n; i++) {
+            if (muestra[i] == muestra[i - 1]) {
+                frecuenciaActual++;
+            } else {
+                if (frecuenciaActual > maxFrecuencia) {
+                    maxFrecuencia = frecuenciaActual;
+                    moda = muestra[i - 1];
+                }
+                frecuenciaActual = 1;
+            }
+        }
+
+        // RANGO
+        double rango = muestra[n - 1] - muestra[0];
+
+        // VARIANZA
+        double sumaVar = 0;
+        for (double val : muestra) {
+            sumaVar += Math.pow(val - media, 2);
+        }
+        double varianza = sumaVar / n;
+
+        // DESVIACIÓN
+        double desviacion = Math.sqrt(varianza);
+
+        // REDONDEO
+        media = Math.round(media * 100.0) / 100.0;
+        mediana = Math.round(mediana * 100.0) / 100.0;
+        moda = Math.round(moda * 100.0) / 100.0;
+        rango = Math.round(rango * 100.0) / 100.0;
+        varianza = Math.round(varianza * 100.0) / 100.0;
+        desviacion = Math.round(desviacion * 100.0) / 100.0;
+
+        // RESULTADOS
+        System.out.println("\nResultados:");
+        System.out.println("Media: " + media);
+        System.out.println("Mediana: " + mediana);
+
+        if (maxFrecuencia > 1) {
+            System.out.println("Moda: " + moda);
+        } else {
+            System.out.println("Moda: No hay");
+        }
+
+        System.out.println("Rango: " + rango);
+        System.out.println("Varianza: " + varianza);
+        System.out.println("Desviación estándar: " + desviacion);
     }
 }
